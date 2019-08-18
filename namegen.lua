@@ -1,14 +1,13 @@
-local PATH = string.match(debug.getinfo(1,"S").source,
-                          "^@(.+/)[%a%-%d_]+%.lua$") or "./"
+local modpath = minetest.get_modpath(minetest.get_current_modname())
 
 local namegen = {
-    _VERSION     = 'LuaNameGen - Lua Name Generator v1.0.0',
-    _DESCRIPTION = 'A name generator written in Lua',
-    _URL         = 'https://github.com/LukeMS/lua-namegen',
+    _VERSION     = 'LuaNameGen - Lua Name Generator v1.2.0',
+    _DESCRIPTION = 'A name generator written in Lua for use with Minetest mods',
+    _URL         = 'https://github.com/FaceDeer/namegen',
     _LICENSE     = [[
 MIT LICENSE
 
-Copyright (c) 2017 Lucas Siqueira
+Copyright (c) 2017 Lucas Siqueira, FaceDeer
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -18,33 +17,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ]]
 }
 
-local function loadrequire(module)
-    local loaded
-    local function requiref(module)
-        loaded = require(module)
-    end
-    pcall(requiref, module)
-    return loaded
-end
-
-local RangedTable = require("namegen.rangedtable")
-
-local inspect = loadrequire('inspect') or function(t)
-    s = "{"
-    for k, v in pairs(t) do
-        s = s .. string.format("%s: %s;", k, v)
-    end
-    s = s .. "}"
-    return s
-end
-
+local RangedTable = dofile(modpath .. "/rangedtable.lua")
 
 -- ======================
 --  CONSTANTS
 -- ======================
 
 -- set this to true for a debug/verbose mode
--- requires 'inspect' (https://github.com/kikito/inspect.lua)
 local DEBUG = false
 
 
@@ -84,9 +63,9 @@ end
 local function ng_debug(str, ...)
     if DEBUG == true then
         if ... then
-            print(string.format(str, ...))
+            minetest.debug(string.format(str, ...))
         else
-            print(str)
+            minetest.debug(str)
         end
     end
 end
@@ -105,7 +84,7 @@ local function parse_rules(rules)
         chance = chance == "" and 100 or tonumber(chance)
         rules_weight[#rules_weight + 1] = {chance, rule}
     end
-    ng_debug(inspect(rules), inspect(rules_weight))
+	ng_debug("rules by weight " .. dump(rules_weight))
     return RangedTable(rules_weight)
 end
 
@@ -145,15 +124,15 @@ local function parse_property(name, value, parser_data)
     return true
 end
 
-local function parse_lines(path, data)
-    ng_debug("starting `parse_lines`", path)
+local function parse_lines(lines)
+    ng_debug("starting `parse_lines`")
     local data
     local name_pattern = [[name ?"(.+)" ?{]]
     local property_pattern = [[ +(.+) = "(.+)"]]
     local end_body_pattern = [[}]]
 
     local body = false
-    for line in io.lines(path) do
+    for line in lines do
         local name = string.match(line, name_pattern)
         if name ~= nil then
             namegen_generators_list[name] = {}
@@ -173,26 +152,6 @@ local function parse_lines(path, data)
     end
     ng_debug("ending `parse_lines`")
 end
-
-local function parse_file(filename)
-    ng_debug("starting `parse_file`")
-    local path = get_path(filename)
-    if not file_exists(path) then
-        error(string.format("File \"%s\" not found!\n",path))
-    end
-    parse_lines(get_path(filename))
-    ng_debug("ending `parse_file`")
-end
-
-local function parse_index()
-    ng_debug("starting `parse_index`")
-
-    for line in io.lines(PATH .. "namegen.index") do
-        parse_file(line)
-    end
-    ng_debug("ending `parse_index`")
-end
-
 
 -- ======================
 --  WORD VALIDATION
@@ -237,7 +196,7 @@ local function word_repeated_syllables(str)
             if search == sub then
                 return true
             end
-            ng_debug("not repeatted", str, step, search, sub)
+            ng_debug("not repeated", str, step, search, sub)
         end
     end
     return false
@@ -438,15 +397,6 @@ local function exhaust_rules(name)
     return plain_rules
 end
 
-local function combine_strings(...)
-    print(inspect(...))
-    local str
-    for _, v in pairs(...) do
-        str = (str and " " or "") .. v
-    end
-    return str
-end
-
 local function map_all(fcn, tab, idx, ...)
     -- http://stackoverflow.com/a/13059680/5496529
     if idx < 1 then
@@ -469,7 +419,7 @@ local function exhaust_set(name)
                 str = (str and (str .. v) or v)
             end
         end
-        print(str)
+        --print(str)
         str = word_prune_spaces(str)
         names[str] = str
     end
@@ -503,19 +453,12 @@ local function get_sets()
     return t
 end
 
-
--- ------------------------------
---  load default sets (as specified on `namegen.index`)
--- ------------------------------
-parse_index()
-
-
 -- ------------------------------
 --  publicly available functions
 -- ------------------------------
 
 namegen.get_sets = get_sets
-namegen.parse_file = parse_file
+namegen.parse_lines = parse_lines
 namegen.generate = generate
 namegen.generate_custom = generate_custom
 namegen.exhaust_set = exhaust_set

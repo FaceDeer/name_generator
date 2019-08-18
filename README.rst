@@ -3,7 +3,7 @@
 .. |MIT| image:: https://img.shields.io/badge/License-MIT-green.svg
 
 
-LuaNameGen - Lua Name Generator v1.1.0
+LuaNameGen - Lua Name Generator v1.2.0
 =======================================
 
 LuaNameGen is a tool to quickly generate random names for characters, objects and places. It is useful for both table-top games (run the script, grab the name) or to be used as a library for game development.
