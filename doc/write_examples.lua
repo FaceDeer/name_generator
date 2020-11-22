@@ -1,5 +1,5 @@
 local inspect = require("inspect")
-local namegen = require("namegen")
+local name_generator = require("name_generator")
 
 local DEST = "examples.rst"
 local dest = ""
@@ -7,7 +7,7 @@ local dest = ""
 math.randomseed(1)
 math.random()
 
-local sets = namegen.get_sets()
+local sets = name_generator.get_sets()
 table.sort(sets)
 local groups = {
     {"Books"},
@@ -52,7 +52,7 @@ for _, t in ipairs(groups) do
         local names = {}
         local s = 0
         while s < 30 do
-            local str = namegen.generate(set)
+            local str = name_generator.generate(set)
             if names[str] == nil then
                 names[str] = str
                 s = s + 1
