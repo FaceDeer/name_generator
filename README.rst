@@ -94,12 +94,10 @@ Basic usage
 
 To get a dwarf name and surname, using default sets, just do:
 
-.. code-block:: lua
+	name_generator.parse_lines(io.lines(modpath.."/data/creatures.cfg")) -- loads the config file that includes dwarf names
 
-   local namegen = require("namegen")
-
-   local name = namegen.generate("dwarf male")  --  Dolin
-   local surname = namegen.generate("dwarf surname")  --  Steelcutter
+	local name = name_generator.generate("dwarf male")  --  Dolin
+	local surname = name_generator.generate("dwarf surname")  --  Steelcutter
 
 
 Like-a-boss usage
@@ -109,13 +107,11 @@ To get whatever you want, call for a name set with the rule you want:
 
 .. code-block:: lua
 
-   local namegen = require("namegen")
-
-   local syllable_a = namegen.generate_custom(
+   local syllable_a = name_generator.generate_custom(
        "orc female 2", "$A$10B")  --  Bragluk
-   local syllable_b = namegen.generate_custom(
+   local syllable_b = name_generator.generate_custom(
        "giant female", "$B$10B")  --  tuhli
-   local syllable_c = namegen.generate_custom(
+   local syllable_c = name_generator.generate_custom(
        "infernal 1", "-$B$B")  -- -mozraz
    print("It's alive!!!", syllable_a .. syllable_b .. syllable_c)
    -- It's alive!!!   Bragluktuhli-mozraz
@@ -127,10 +123,6 @@ How does it works?
 
 Basics
 -------
-
-When loaded/required, the module "namegen" parses the set files pointed by 'namegen.index' (a plain text file).
-
-Each line of 'namegen.index' indicates the location of a set file to be readed. By default it only contains one: `namegen.cfg`.
 
 Each set file (also plain text files) follows a simple syntax (libtcod's syntax, so any .cfg file from it can be used), and may contains multiple sets. This is an example of a basic set:
 
